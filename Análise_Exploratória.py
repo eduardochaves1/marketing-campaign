@@ -11,11 +11,12 @@ st.write('''
 </style>
 ''', unsafe_allow_html=True)
 
+color_pallete = px.colors.sequential.matter_r
+
 
 class AnaliseExploratoria:
   def __init__(self):
-    self.df = pd.read_csv('assets/data.csv', parse_dates=['date'])
-    self.df['date'] = self.df['date'].dt.date
+    self.df = self.pipeline('assets/data.csv')
 
     self.start_end_dates = [self.df['date'].iloc[1], self.df['date'].iloc[-1]]
 
@@ -26,6 +27,24 @@ class AnaliseExploratoria:
     st.sidebar.button('Resetar Data', type='primary', on_click=self.reset_date)
 
     self.df = self.filter_df(self.df)
+
+
+  def pipeline(self, path):
+    df = (pd
+      .read_csv(path, parse_dates=['date'])
+      .drop_duplicates()
+      .dropna())
+
+    df['sales_channel'] = df['sales_channel'].str.capitalize()
+    df = df.drop(df.query('invested < 1 or returned < 1').index)
+
+    df['roi'] = ((df['returned'] - df['invested']) / df['invested']) * 100
+    df['month'] = df['date'].dt.month_name()
+    df['day_of_week'] = df['date'].dt.day_name()
+    df['day_of_month'] = df['date'].dt.day
+
+    df['date'] = df['date'].dt.date
+    return df.reset_index(drop=True)
 
 
   def reset_date(self):
@@ -54,7 +73,7 @@ class AnaliseExploratoria:
 
 
   def plot_plotly(self, fig):
-    fig.update_layout(margin_t=10, margin_b=0, margin_r=0, hoverlabel_font_size=14, separators=',.')
+    fig.update_layout(margin_t=10, margin_b=0, margin_r=0, hoverlabel_font_size=14, separators=',.', bargap=.1)
     return st.plotly_chart(fig, use_container_width=True, theme='streamlit')
 
 
@@ -63,9 +82,9 @@ class AnaliseExploratoria:
     st.write(f'## {title}')
     
     if type == 'dataframe':
-      return st.dataframe(fig, use_container_width=True)
+      st.dataframe(fig, use_container_width=True)
     else:
-      return self.plot_plotly(fig)
+      self.plot_plotly(fig)
 
 
   def view(self):
@@ -86,6 +105,7 @@ class AnaliseExploratoria:
       self.get_stats('Total Investido', invested, column=c1)
       self.get_stats('Retorno Total', returned, delta = returned-invested, column=c2)
       self.get_stats('ROI Total', roi, column=c3, type='percentage')
+
     with advanced_viz:
       st.write('`>> df.describe().round()`')
       st.dataframe(self.df.describe().round(), use_container_width=True)
@@ -93,12 +113,14 @@ class AnaliseExploratoria:
 
     self.main_section(title='📝 Amostra dos Dados', fig = self.df, type='dataframe')
 
-    self.main_section(title='🥊 Investimento vs Retorno', fig = px.line(self.df, x='date', y=['invested', 'returned']))
+    self.main_section(title='🥊 Investimento vs Retorno', fig = px.line(self.df, x='date', y=['invested', 'returned'],
+      color_discrete_sequence=[color_pallete[0], color_pallete[-2]]))
 
-    self.main_section(title='🤝 Relação Investimento-Retorno', fig = px.scatter(self.df, x='invested', y='returned', color='month'))
+    self.main_section(title='🤝 Relação Investimento-Retorno', fig = px.scatter(self.df, x='invested', y='returned',
+      color='month', color_discrete_sequence=color_pallete))
 
-    self.main_section(title='🔝 Melhores Canais de Venda', fig = px.histogram(self.df, x='selling_chanel', color='month',
-      category_orders={'selling_chanel': self.df['selling_chanel'].value_counts().index}))
+    self.main_section(title='🔝 Melhores Canais de Venda', fig = px.histogram(self.df, x='sales_channel', color='month',
+      category_orders={'sales_channel': self.df['sales_channel'].value_counts().index}, color_discrete_sequence=color_pallete))
 
 
     st.write('## ℹ️ Distribuições')
@@ -106,10 +128,10 @@ class AnaliseExploratoria:
     invested_returned, roi_box, roi_hist = st.tabs(['Investimento vs Retorno', 'ROI (Boxplot)', 'ROI (Histograma)'])
 
     with invested_returned:
-      self.plot_plotly(px.box(self.df, y=['invested', 'returned']))
+      self.plot_plotly(px.box(self.df, y=['invested', 'returned'], color_discrete_sequence=[color_pallete[-2]]))
     with roi_box:
-      self.plot_plotly(px.box(self.df['roi']))
+      self.plot_plotly(px.box(self.df['roi'], color_discrete_sequence=[color_pallete[-2]]))
     with roi_hist:
-      self.plot_plotly(px.histogram(self.df['roi']))
+      self.plot_plotly(px.histogram(self.df['roi'], color_discrete_sequence=[color_pallete[-2]]))
 
 AnaliseExploratoria().view()
