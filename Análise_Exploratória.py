@@ -45,7 +45,6 @@ class AnaliseExploratoria:
     df['roi'] = ((df['returned'] - df['invested']) / df['invested']) * 100
     df['month'] = df['date'].dt.month_name()
     df['day_of_week'] = df['date'].dt.day_name()
-    df['day_of_month'] = df['date'].dt.day
 
     df['date'] = df['date'].dt.date
     return df.reset_index(drop=True)
