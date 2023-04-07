@@ -16,6 +16,8 @@ color_pallete = px.colors.sequential.matter_r
 
 class AnaliseExploratoria:
   def __init__(self):
+    """ Iniciando as principais variáveis que serão usadas na página """
+
     self.df = self.pipeline('assets/data.csv')
 
     self.start_end_dates = [self.df['date'].iloc[1], self.df['date'].iloc[-1]]
@@ -30,6 +32,8 @@ class AnaliseExploratoria:
 
 
   def pipeline(self, path):
+    """ Pipeline a qual realiza o tratamento necessário no dado importado """
+
     df = (pd
       .read_csv(path, parse_dates=['date'])
       .drop_duplicates()
@@ -48,15 +52,21 @@ class AnaliseExploratoria:
 
 
   def reset_date(self):
+    """ Resetar a data da variável de sessão para o padrão original do dataset importado """
+
     st.session_state['start_date'] = self.start_end_dates[0]
     st.session_state['end_date'] = self.start_end_dates[1]
 
 
   def filter_df(self, df):
+    """ Filtrar os dados do DataFrame de acordo com o intervalo de data definido no input da página """
     return df[(df['date'] >= st.session_state['start_date']) & (df['date'] <= st.session_state['end_date'])]
 
 
   def get_stats(self, title: str, value, column, type: str='currency', delta=None):
+    """ Método usado para simplificar e minificar o uso de código necessário
+    para utilizar o componente metric do streamlit """
+
     if type == 'currency':
       if delta:
         return column.metric(title, locale.currency(value, grouping=True), delta=locale.currency(delta, grouping=True))
@@ -68,19 +78,21 @@ class AnaliseExploratoria:
       return column.metric(title, locale.format_string('%.0f', value, grouping=True))
 
 
-  def line(self):
-    st.write('---')
-
-
   def plot_plotly(self, fig):
+    """ Fazer update gerais nas figuras geradas pelo Plotly e retornar o método do
+    streamlit para realizar o plot da figura com a configuração padrão """
+
     fig.update_layout(margin_t=10, margin_b=0, margin_r=0, hoverlabel_font_size=14, separators=',.', bargap=.1)
     return st.plotly_chart(fig, use_container_width=True, theme='streamlit')
 
 
   def main_section(self, fig, title:str=None, type:str=None):
-    self.line()
+    """ Um componente usado para simplificar e minificar o uso de código
+    para gerar a parte mais comum da página """
+
+    st.write('---')
     st.write(f'## {title}')
-    
+
     if type == 'dataframe':
       st.dataframe(fig, use_container_width=True)
     else:
@@ -88,6 +100,8 @@ class AnaliseExploratoria:
 
 
   def view(self):
+    """ Principal método da classe onde gerará todos os componentes visuais da página """
+
     st.write('# 📊 Análise Exploratória')
 
     basic_viz, advanced_viz = st.tabs(['Estatísticas Gerais', 'Estatísticas Gerais (Avançado)'])
