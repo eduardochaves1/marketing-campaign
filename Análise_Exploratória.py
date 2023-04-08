@@ -3,7 +3,6 @@ import pandas as pd
 import plotly.express as px
 import locale
 
-locale.setlocale(locale.LC_MONETARY, 'pt_BR.utf8')
 st.set_page_config(page_title='Análise Exploratória', page_icon='📊', layout='wide')
 st.write('''
 <style>
