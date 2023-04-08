@@ -1,9 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import locale
 
-locale.setlocale(locale.LC_MONETARY, 'pt_BR.UTF-8')
 st.set_page_config(page_title='Análise Exploratória', page_icon='📊', layout='wide')
 st.write('''
 <style>
@@ -67,14 +65,16 @@ class AnaliseExploratoria:
     para utilizar o componente metric do streamlit """
 
     if type == 'currency':
+      value = f'R${value:,.0f}'.replace(',', '.')
       if delta:
-        return column.metric(title, locale.currency(value, grouping=True), delta=locale.currency(delta, grouping=True))
+        delta = f'R${delta:,.0f}'.replace(',', '.')
+        return column.metric(title, value, delta=delta)
       else:
-        return column.metric(title, locale.currency(value, grouping=True))
+        return column.metric(title, value)
     elif type == 'percentage':
       return column.metric(title, f'{value.round()}%')
     else:
-      return column.metric(title, locale.format_string('%.0f', value, grouping=True))
+      return column.metric(title, value)
 
 
   def plot_plotly(self, fig):
