@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 import locale
 
-locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
+locale.setlocale(locale.LC_MONETARY, 'pt_BR.UTF-8')
 st.set_page_config(page_title='Análise Exploratória', page_icon='📊', layout='wide')
 st.write('''
 <style>
@@ -103,6 +103,13 @@ class AnaliseExploratoria:
 
     st.write('# 📊 Análise Exploratória')
 
+    st.write("""
+    - Made by [Eduardo Chaves](https://www.linkedin.com/in/edu-chaves/)
+    - [GitHub Repo Link](https://github.com/eduardochaves1/marketing-campaign)
+    """)
+
+    st.write('> **OBS.:** As informações e gráficos deste projeto são baseados em dados gerados artificalmente e randômicamente por mim, criador deste projeto, logo, não refletem a realidade.')
+
     basic_viz, advanced_viz = st.tabs(['Estatísticas Gerais', 'Estatísticas Gerais (Avançado)'])
 
     with basic_viz:
@@ -132,7 +139,7 @@ class AnaliseExploratoria:
     self.main_section(title='🤝 Relação Investimento-Retorno', fig = px.scatter(self.df, x='invested', y='returned',
       color='month', color_discrete_sequence=color_pallete))
 
-    self.main_section(title='🔝 Melhores Canais de Venda', fig = px.histogram(self.df, x='sales_channel', color='month',
+    self.main_section(title='🏆 Melhores Canais de Venda', fig = px.histogram(self.df, x='sales_channel', color='month',
       category_orders={'sales_channel': self.df['sales_channel'].value_counts().index}, color_discrete_sequence=color_pallete))
 
 
